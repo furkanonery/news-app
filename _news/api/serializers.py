@@ -32,7 +32,7 @@ class JournalistSerializer(serializers.Serializer):
 
 class ArticleSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    journalist = serializers.StringRelatedField(read_only=True)
+    journalist_id = serializers.IntegerField()
     title = serializers.CharField()
     description = serializers.CharField()
     text = serializers.CharField()
