@@ -1,8 +1,17 @@
 from rest_framework import serializers
 from _news.models import Article, Journalist
+from datetime import datetime, date
+from django.utils.timesince import timesince
 
+class JournalistSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Journalist
+        fields = '__all__'
+        #fields = ['surname']
+        read_only_fields = ['id']
 
-class JournalistSerializer(serializers.Serializer):
+#STANDART SERIALIZER
+class JournalistDefaultSerializer(serializers.Serializer):
     name = serializers.CharField()
     surname = serializers.CharField()
     biography = serializers.CharField()
@@ -31,9 +40,31 @@ class JournalistSerializer(serializers.Serializer):
         ben update sırasında karşı tarafa bir instance göneriyorum
         bu  objede update edilecek alan var mı yok ona bakmam lazım
         '''
+class ArticleSerializer(serializers.ModelSerializer):
+    time_since_pub = serializers.SerializerMethodField()
+    class Meta:
+        model = Article
+        fields = '__all__'
+        #fields = ['title','text']
+        read_only_fields = ['id','creation_date','update_date']
 
+    def get_time_since_pub(self, object):
+        now = datetime.now()
+        pub_date = object.publish_date
+        if object.is_active:      
+            time_delta = timesince(pub_date,now)
+            return time_delta
+        else:
+            return "article is not active"
+    
+    def validate_publish_date(self, dateValue):
+        today = date.today()
+        if(dateValue>today):
+            raise serializers.ValidationError("Tarih değeri ileri bir tarih olamıyor...")
+        return dateValue
 
-class ArticleSerializer(serializers.Serializer):
+#STANDART SERIALIZER
+class ArticleDefaultSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     journalist_id = serializers.IntegerField()
     title = serializers.CharField()
