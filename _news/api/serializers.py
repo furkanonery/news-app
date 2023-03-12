@@ -3,45 +3,9 @@ from _news.models import Article, Journalist
 from datetime import datetime, date
 from django.utils.timesince import timesince
 
-class JournalistSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Journalist
-        fields = '__all__'
-        #fields = ['surname']
-        read_only_fields = ['id']
-
-#STANDART SERIALIZER
-class JournalistDefaultSerializer(serializers.Serializer):
-    name = serializers.CharField()
-    surname = serializers.CharField()
-    biography = serializers.CharField()
-
-    def create(self, validated_data):
-        print(validated_data)
-        return Journalist.objects.create(**validated_data)
-
-        '''
-        validated_data arkaplanda bir dictionary objesi
-        dolayısıyla iki tane yıldız işareti koymalıyız ki
-        bu  objeyi aç anahtar değer alanlarını eşleştir
-        ve kaydet dememiz lazım
-        '''
-
-    def update(self, instance, validated_data):
-
-        instance.name = validated_data.get('name', instance.name)
-        instance.surname = validated_data.get('surname', instance.surname)
-        instance.biography = validated_data.get(
-            'biography', instance.biography)
-
-        instance.save()
-        return instance
-        '''
-        ben update sırasında karşı tarafa bir instance göneriyorum
-        bu  objede update edilecek alan var mı yok ona bakmam lazım
-        '''
 class ArticleSerializer(serializers.ModelSerializer):
-    time_since_pub = serializers.SerializerMethodField()
+    # journalist = JournalistSerializer()
+    # time_since_pub = serializers.SerializerMethodField()
     class Meta:
         model = Article
         fields = '__all__'
@@ -123,3 +87,47 @@ class ArticleDefaultSerializer(serializers.Serializer):
                 f"(title) alanı en az 20 karakter içermelidir, siz {len(value)} karakter kullandınız"
             )
         return value
+    
+class JournalistSerializer(serializers.ModelSerializer):
+    #Articles = ArticleSerializer(read_only=True, many=True)
+    Articles = serializers.HyperlinkedRelatedField(
+        many = True,
+        read_only = True,
+        view_name='article-detail',
+    )
+    class Meta:
+        model = Journalist
+        fields = '__all__'
+        #fields = ['surname']
+        #read_only_fields = ['id']
+
+#STANDART SERIALIZER
+class JournalistDefaultSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    surname = serializers.CharField()
+    biography = serializers.CharField()
+
+    def create(self, validated_data):
+        print(validated_data)
+        return Journalist.objects.create(**validated_data)
+
+        '''
+        validated_data arkaplanda bir dictionary objesi
+        dolayısıyla iki tane yıldız işareti koymalıyız ki
+        bu  objeyi aç anahtar değer alanlarını eşleştir
+        ve kaydet dememiz lazım
+        '''
+
+    def update(self, instance, validated_data):
+
+        instance.name = validated_data.get('name', instance.name)
+        instance.surname = validated_data.get('surname', instance.surname)
+        instance.biography = validated_data.get(
+            'biography', instance.biography)
+
+        instance.save()
+        return instance
+        '''
+        ben update sırasında karşı tarafa bir instance göneriyorum
+        bu  objede update edilecek alan var mı yok ona bakmam lazım
+        '''

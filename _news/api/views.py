@@ -23,7 +23,7 @@ class ArticleListCreateApiView(APIView):
 class JournalistListCreateApiView(APIView):
     def get(self, request):
         journalists = Journalist.objects.all()
-        serializer = JournalistSerializer(journalists, many=True)
+        serializer = JournalistSerializer(journalists, many=True, context={'request': request})
         return Response(serializer.data)
     def post(self, request):
         serializer = JournalistSerializer(data=request.data)
